@@ -4,7 +4,18 @@ import { WebSocketServer } from 'ws';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { config } from './config.js';
+
+// ─── Global crash guards ──────────────────────────────────────────────────────
+// Prevent Railway from restarting the server on every unhandled error.
+process.on('uncaughtException', (err) => {
+  console.error('🔥 Uncaught Exception (process kept alive):', err);
+});
+process.on('unhandledRejection', (reason) => {
+  console.error('🔥 Unhandled Promise Rejection (process kept alive):', reason);
+});
+// ─────────────────────────────────────────────────────────────────────────────
 import { 
+  pool,
   initDb, 
   getBalance, 
   getUser, 
@@ -26,6 +37,11 @@ async function startServer() {
   try {
     // 1. Initialize PostgreSQL tables
     await initDb();
+
+    // Prevent pg pool errors from becoming uncaught 'error' events that crash Node
+    pool.on('error', (err) => {
+      console.error('⚠️  Postgres pool error (connection kept):', err);
+    });
 
     // 2. Create Express app
     const app = express();
@@ -219,18 +235,23 @@ async function startServer() {
       console.log(`🚀 API Server + WebSockets running on port ${config.PORT}`);
     });
 
-    // 5. Start Telegram Bot
-    bot.start({
-      onStart: (botInfo) => {
-        console.log(`🤖 Telegram Bot started successfully as @${botInfo.username}`);
-      }
-    }).catch(err => {
-      console.error('❌ Failed to start Telegram Bot polling:', err);
-    });
+    // 5. Start Telegram Bot (with auto-retry on network errors)
+    const startBot = () => {
+      bot.start({
+        onStart: (botInfo) => {
+          console.log(`🤖 Telegram Bot started successfully as @${botInfo.username}`);
+        }
+      }).catch(err => {
+        console.error('❌ Telegram Bot polling stopped, restarting in 5s:', err);
+        setTimeout(startBot, 5000);
+      });
+    };
+    startBot();
 
   } catch (err) {
+    // Log the error but do NOT exit — let Railway health-check fail naturally
+    // instead of triggering an infinite restart loop.
     console.error('❌ Failed to start server:', err);
-    process.exit(1);
   }
 }
 
