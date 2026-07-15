@@ -8,6 +8,6 @@
   "scripts": {
     "dev": "pnpm --filter api-server dev",
     "build": "pnpm --filter api-server build",
-    "start": "pnpm --filter api-server start"
+    "start": "pnpm --filter api-server build && pnpm --filter api-server start"
   }
 }
