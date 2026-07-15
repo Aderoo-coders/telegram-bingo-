@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Shamo Bingo</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <span class="logo-spark">⚡</span> SHAMO BINGO <span class="logo-spark">⚡</span>
+    </div>
+  </div>
+
+  <div class="app-container">
+    
+    <!-- PLAY TAB -->
+    <div id="tab-play" class="tab-content">
+      <!-- Selection Page -->
+      <div id="selection-page" class="card">
+        <div class="stake-badge">Stake: <span id="stake-amount">50</span> ETB</div>
+        
+        <div class="selection-status-bar">
+          <div class="wallet-info">Balance: <span id="selection-wallet">0.00</span> ETB</div>
+          <div class="selected-info">Selected: <span id="selected-count" class="counter">0</span>/15</div>
+        </div>
+        
+        <div class="instructions">Select exactly 15 numbers from the grid below:</div>
+        
+        <div class="grid-container">
+          <div class="grid" id="numbers-grid"></div>
+        </div>
+        
+        <div class="bottom-actions">
+          <button id="quick-pick-btn" class="btn btn-secondary">⚡ Auto Pick</button>
+          <button id="refresh-selection" class="btn btn-warning">🔄 Clear</button>
+          <button id="join-btn" class="btn btn-primary" disabled>Join Game</button>
+        </div>
+      </div>
+
+      <!-- Playing Page (Hidden by default) -->
+      <div id="playing-page" class="card hidden">
+        <!-- Waiting/Lobby State overlay -->
+        <div id="lobby-waiting" class="lobby-overlay">
+          <div class="loader-spinner"></div>
+          <h2>Waiting for Opponents</h2>
+          <p class="waiting-details">Need at least 2 players to start.</p>
+          <div id="lobby-countdown-box" class="countdown-box hidden">
+            Starting in: <span id="lobby-seconds">30</span>s
+          </div>
+          <div class="joined-players-box">
+            <h3>Players Joined:</h3>
+            <ul id="joined-players-list">
+              <!-- Dynamically populated -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- Game active layout -->
+        <div class="top-stats">
+          <div class="stat-box">
+            <span class="stat-label">GAME ID</span>
+            <span class="stat-value" id="cartela-count">#--</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">CALLED</span>
+            <span class="stat-value" id="called-count">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="stat-label">WALLET</span>
+            <span class="stat-value" id="playing-wallet">0.00 ETB</span>
+          </div>
+        </div>
+
+        <!-- Recent Called Ball Showcase -->
+        <div class="ball-callout-container">
+          <div id="current-ball" class="called-ball-large">-</div>
+          <div class="ball-history" id="ball-history-row">
+            <!-- Small balls showing last 5 called numbers -->
+          </div>
+        </div>
+
+        <div class="bingo-header">
+          <div class="bingo-letter b">B</div>
+          <div class="bingo-letter i">I</div>
+          <div class="bingo-letter n">N</div>
+          <div class="bingo-letter g">G</div>
+          <div class="bingo-letter o">O</div>
+        </div>
+
+        <div class="game-main-content">
+          <div class="board-panel">
+            <div class="panel-header">Called Board (1-130)</div>
+            <div id="main-grid" class="main-bingo-grid"></div>
+          </div>
+          
+          <div class="player-panel">
+            <div class="panel-header">Your Card (Matches: <span id="match-score">0</span>/12)</div>
+            <div id="player-cartela" class="player-cartela-grid"></div>
+          </div>
+        </div>
+
+        <!-- Winner Announcement Overlay -->
+        <div id="game-over-overlay" class="game-over-overlay hidden">
+          <div class="game-over-box">
+            <h1 id="game-outcome-title">BINGO!</h1>
+            <div class="trophy">🏆</div>
+            <p id="winner-name-p">Winner: user123</p>
+            <p id="payout-amount-p">Won: 0.00 ETB</p>
+            <button id="lobby-return-btn" class="btn btn-primary">Return to Menu</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WALLET TAB -->
+    <div id="tab-wallet" class="tab-content hidden">
+      <div class="card">
+        <h2 class="section-title">💼 Wallet Dashboard</h2>
+        
+        <div class="wallet-balance-card">
+          <span class="balance-title">AVAILABLE BALANCE</span>
+          <span class="balance-value" id="wallet-tab-balance">0.00 ETB</span>
+        </div>
+
+        <div class="withdrawal-section">
+          <h3>Request Withdrawal</h3>
+          <p class="desc">Deduct directly from your wallet balance. Minimum 50 ETB.</p>
+          <div class="withdrawal-form">
+            <input type="number" id="withdraw-amount-input" placeholder="Amount (ETB)" min="50" step="10">
+            <button id="submit-withdrawal-btn" class="btn btn-primary">Request Payout</button>
+          </div>
+          <div id="withdraw-message" class="message-box hidden"></div>
+        </div>
+
+        <div class="transactions-section">
+          <h3>Recent Transactions</h3>
+          <div id="wallet-transactions-list" class="transactions-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div id="tab-history" class="tab-content hidden">
+      <div class="card">
+        <h2 class="section-title">📜 Game History</h2>
+        <p class="desc">Your recent 20 matches showing stake, results, and matching status.</p>
+        
+        <div id="history-games-list" class="history-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div id="tab-settings" class="tab-content hidden">
+      <div class="card">
+        <h2 class="section-title">⚙️ Settings</h2>
+
+        <!-- Profile Section -->
+        <div class="settings-group">
+          <h3>👤 Player Profile</h3>
+          <div class="profile-details">
+            <div class="profile-row">
+              <span class="detail-label">Username:</span>
+              <span class="detail-value" id="profile-username">@Player</span>
+            </div>
+            <div class="profile-row">
+              <span class="detail-label">User ID:</span>
+              <span class="detail-value" id="profile-userid">--</span>
+            </div>
+            <div class="profile-row">
+              <span class="detail-label">Phone:</span>
+              <span class="detail-value" id="profile-phone">--</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Appearance Section -->
+        <div class="settings-group">
+          <h3>🎨 Appearance Theme</h3>
+          <p class="desc">Choose color aesthetics style:</p>
+          <div class="theme-selectors">
+            <button id="theme-dark-neon" class="theme-btn active">Neon Space</button>
+            <button id="theme-obsidian" class="theme-btn">Obsidian Blue</button>
+            <button id="theme-light" class="theme-btn">Light Cyber</button>
+          </div>
+        </div>
+
+        <!-- Support Section -->
+        <div class="settings-group">
+          <h3>🤝 Support & Contact</h3>
+          <p class="desc">Need help or want to deposit manual funds?</p>
+          <div class="settings-actions">
+            <a href="https://t.me/Derash_Admin" target="_blank" class="btn btn-secondary">💬 Contact Admin</a>
+            <a href="https://t.me/Derash_Admin" target="_blank" class="btn btn-warning">💳 Deposit Wallet</a>
+          </div>
+          <div class="faq-box">
+            <h4>💡 FAQ</h4>
+            <div class="faq-item">
+              <div class="faq-q">How does the payout work?</div>
+              <div class="faq-a">Admin commission (20%) is automatically deducted from every game stake. The winner gets the remaining 80% pool. If multiple players win on the same draw, the reward is split.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Navigation Bar -->
+  <div class="nav-bar">
+    <button id="nav-play-btn" class="nav-item active">
+      <span class="nav-icon">🎮</span>
+      <span class="nav-label">Play</span>
+    </button>
+    <button id="nav-wallet-btn" class="nav-item">
+      <span class="nav-icon">💼</span>
+      <span class="nav-label">Wallet</span>
+    </button>
+    <button id="nav-history-btn" class="nav-item">
+      <span class="nav-icon">📜</span>
+      <span class="nav-label">History</span>
+    </button>
+    <button id="nav-settings-btn" class="nav-item">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-label">Settings</span>
+    </button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

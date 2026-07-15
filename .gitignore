@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+shamo_bingo.db
+.pnpm-debug.log
+.railway/

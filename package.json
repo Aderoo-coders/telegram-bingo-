@@ -1,0 +1,13 @@
+{
+  "name": "ghost-bingo-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter api-server dev",
+    "build": "pnpm --filter api-server build",
+    "start": "pnpm --filter api-server start"
+  }
+}
