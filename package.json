@@ -9,8 +9,5 @@
     "dev": "pnpm --filter api-server dev",
     "build": "pnpm --filter api-server build",
     "start": "pnpm --filter api-server start"
-  },
-  "dependencies": {
-    "ngrok": "^5.0.0-beta.2"
   }
 }
