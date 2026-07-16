@@ -8,9 +8,8 @@ export function registerGameHandlers(bot: Bot) {
     if (!userId) return;
 
     const keyboard = new InlineKeyboard()
-      .text("10 ETB", "stake_10").text("20 ETB", "stake_20").row()
-      .text("50 ETB", "stake_50").text("100 ETB", "stake_100").row()
-      .text("200 ETB", "stake_200");
+      .text("30 ETB", "stake_30").text("50 ETB", "stake_50").row()
+      .text("100 ETB", "stake_100").text("200 ETB", "stake_200");
 
     await ctx.reply("💰 Choose your stake amount:", { reply_markup: keyboard });
   });

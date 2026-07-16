@@ -12,7 +12,11 @@ let currentTheme = localStorage.getItem('bingo-theme') || 'neon';
 
 // Parse stake selection
 const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('stake')) stake = parseInt(urlParams.get('stake'), 10);
+let startedWithUrlStake = false;
+if (urlParams.get('stake')) {
+  stake = parseInt(urlParams.get('stake'), 10);
+  startedWithUrlStake = true;
+}
 document.getElementById('stake-amount').textContent = stake;
 
 // Fetch user profile and balance
@@ -24,6 +28,7 @@ async function fetchUserBalance() {
       const data = await response.json();
       userBalance = parseFloat(data.balance);
       document.getElementById('selection-wallet').textContent = userBalance.toFixed(2);
+      document.getElementById('welcome-balance-amount').textContent = userBalance.toFixed(2);
       document.getElementById('playing-wallet').textContent = userBalance.toFixed(2) + " ETB";
       document.getElementById('wallet-tab-balance').textContent = userBalance.toFixed(2) + " ETB";
       myUserId = tg.initDataUnsafe?.user?.id?.toString() || "me";
@@ -331,7 +336,14 @@ function returnToSelection() {
   document.getElementById('playing-page').classList.add('hidden');
   document.getElementById('game-over-overlay').classList.add('hidden');
   document.getElementById('lobby-waiting').classList.remove('hidden');
-  document.getElementById('selection-page').classList.remove('hidden');
+  
+  if (startedWithUrlStake) {
+    document.getElementById('selection-page').classList.remove('hidden');
+    document.getElementById('welcome-page').classList.add('hidden');
+  } else {
+    document.getElementById('welcome-page').classList.remove('hidden');
+    document.getElementById('selection-page').classList.add('hidden');
+  }
   clearSelection();
 }
 
@@ -619,6 +631,53 @@ document.getElementById('theme-light').addEventListener('click', () => applyThem
 
 // Set Saved Theme on Startup
 applyTheme(currentTheme);
+
+// Bind welcome page stake buttons
+document.querySelectorAll('.welcome-stake-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const selectedStake = parseInt(btn.getAttribute('data-stake'), 10);
+    
+    if (userBalance < selectedStake) {
+      if (tg.showAlert) {
+        tg.showAlert(`❌ Not enough balance! You need at least ${selectedStake} ETB to play.`);
+      } else {
+        alert(`❌ Not enough balance! You need at least ${selectedStake} ETB to play.`);
+      }
+      return;
+    }
+
+    stake = selectedStake;
+    document.getElementById('stake-amount').textContent = stake;
+    
+    // Transition to Selection Page
+    document.getElementById('welcome-page').classList.add('hidden');
+    document.getElementById('selection-page').classList.remove('hidden');
+    
+    if (tg.HapticFeedback) {
+      tg.HapticFeedback.impactOccurred('medium');
+    }
+  });
+});
+
+// Bind selection page back button
+document.getElementById('selection-back-btn').addEventListener('click', () => {
+  document.getElementById('selection-page').classList.add('hidden');
+  document.getElementById('welcome-page').classList.remove('hidden');
+  clearSelection();
+  
+  if (tg.HapticFeedback) {
+    tg.HapticFeedback.impactOccurred('light');
+  }
+});
+
+// Determine initial screen visibility based on whether we started with a URL parameter stake
+if (startedWithUrlStake) {
+  document.getElementById('welcome-page').classList.add('hidden');
+  document.getElementById('selection-page').classList.remove('hidden');
+} else {
+  document.getElementById('welcome-page').classList.remove('hidden');
+  document.getElementById('selection-page').classList.add('hidden');
+}
 
 // Initial loading
 fetchUserBalance();
