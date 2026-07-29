@@ -18,9 +18,12 @@ import {
   pool,
   initDb, 
   getBalance, 
+  getWalletBalances,
   getUser, 
+  ensureUserExists,
   updateBalance, 
   createWithdrawal, 
+  createDeposit,
   addTransaction, 
   getUserGameHistory, 
   getUserTransactions 
@@ -69,8 +72,8 @@ async function startServer() {
         if (!user) {
           return res.status(401).json({ error: 'Unauthorized' });
         }
-        const balance = await getBalance(user.id);
-        res.json({ balance });
+        const balances = await getWalletBalances(user.id);
+        res.json({ balance: balances.balance, bonus: balances.bonus });
       } catch (err) {
         console.error('Error in user-balance API:', err);
         res.status(500).json({ error: 'Internal server error' });
@@ -88,15 +91,16 @@ async function startServer() {
         if (!userObj) {
           return res.status(401).json({ error: 'Unauthorized' });
         }
-        const user = await getUser(userObj.id);
+        let user = await getUser(userObj.id);
         if (!user) {
-          return res.status(404).json({ error: 'User profile not found.' });
+          user = await ensureUserExists(userObj.id, userObj.username || userObj.first_name || 'Player');
         }
         res.json({
           userId: user.user_id,
           username: user.username,
           phone: user.phone,
-          balance: parseFloat(user.balance)
+          balance: parseFloat(user.balance),
+          bonus: parseFloat(user.bonus || 0)
         });
       } catch (err) {
         console.error('Error in user-profile API:', err);
@@ -193,6 +197,66 @@ async function startServer() {
         res.json({ success: true, refId: withdrawal.id, newBalance: balance - parsedAmount });
       } catch (err) {
         console.error('Error in request-withdrawal API:', err);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    // SECURE DEPOSIT TRIGGER
+    app.post('/api/request-deposit', async (req, res) => {
+      try {
+        const { initData, amount, platform, referenceId } = req.body;
+        if (!initData || !amount || !platform || !referenceId) {
+          return res.status(400).json({ error: 'Missing parameters' });
+        }
+        const parsedAmount = parseFloat(amount);
+        if (isNaN(parsedAmount) || parsedAmount <= 0) {
+          return res.status(400).json({ error: 'Invalid deposit amount.' });
+        }
+
+        const userObj = verifyTelegramWebapp(initData, config.BOT_TOKEN);
+        if (!userObj) {
+          return res.status(401).json({ error: 'Unauthorized' });
+        }
+
+        const userId = userObj.id;
+        const user = await getUser(userId);
+        if (!user) {
+          return res.status(400).json({ error: 'User registration not completed.' });
+        }
+
+        // Create pending deposit request
+        const deposit = await createDeposit(userId, parsedAmount, platform, referenceId);
+
+        // Notify Admin with Inline Keyboard buttons for easy approval/rejection
+        if (config.ADMIN_ID) {
+          const adminText = `🔔 *New Deposit Request (#${deposit.id})*\n\n` +
+            `👤 *User ID:* \`${userId}\`\n` +
+            `👤 *Username:* @${user.username || 'N/A'}\n` +
+            `📱 *Platform:* *${platform.toUpperCase()}*\n` +
+            `💰 *Amount:* ${parsedAmount.toFixed(2)} ETB\n` +
+            `🧾 *Ref/TXID:* \`${referenceId}\`\n\n` +
+            `Please verify the transaction and choose an action:`;
+
+          const keyboard = {
+            inline_keyboard: [
+              [
+                { text: 'Approve ✅', callback_data: `approve_dep:${deposit.id}` },
+                { text: 'Reject ❌', callback_data: `reject_dep:${deposit.id}` }
+              ]
+            ]
+          };
+
+          bot.api.sendMessage(config.ADMIN_ID, adminText, { 
+            parse_mode: 'Markdown',
+            reply_markup: keyboard
+          }).catch(err => {
+            console.error('Error notifying admin of deposit from WebApp:', err);
+          });
+        }
+
+        res.json({ success: true, refId: deposit.id });
+      } catch (err) {
+        console.error('Error in request-deposit API:', err);
         res.status(500).json({ error: 'Internal server error' });
       }
     });

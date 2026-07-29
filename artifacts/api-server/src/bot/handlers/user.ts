@@ -4,50 +4,72 @@ import { mainMenu } from '../keyboards.js';
 import { config } from '../../config.js';
 
 export function registerUserHandlers(bot: Bot) {
+  // Authentication Guard Helper
+  async function requirePhoneVerification(ctx: any, user: any): Promise<boolean> {
+    if (user && user.phone && user.phone.trim() !== '') {
+      return true; // Phone is verified
+    }
+    const shareMarkup = new Keyboard().requestContact("📱 Share My Contact to Verify").resized().oneTime();
+    await ctx.reply(
+      "🔐 *Phone Contact Verification Required*\n\n" +
+      "🎁 *Welcome Bonus:* You have a **30.00 ETB Welcome Bonus** waiting!\n\n" +
+      "To verify your identity and protect your wallet balance, please tap the button below to share your phone number.",
+      {
+        parse_mode: 'Markdown',
+        reply_markup: shareMarkup
+      }
+    );
+    return false;
+  }
+
   // Start Command
   bot.command('start', async (ctx) => {
     const userId = ctx.from?.id;
     if (!userId) return;
 
-    const user = await getUser(userId);
+    let user = await getUser(userId);
+    const username = ctx.from?.username || ctx.from?.first_name || 'Player';
+    if (!user) {
+      user = await registerUser(userId, username, '');
+    }
 
-    if (user && user.phone) {
-      await ctx.reply("✅ Welcome back to *Shamo Bingo*!", {
+    const verified = await requirePhoneVerification(ctx, user);
+    if (verified) {
+      await ctx.reply("✅ Welcome back to Bingo Spark!", {
         parse_mode: 'Markdown',
         reply_markup: mainMenu()
       });
-    } else {
-      const shareMarkup = new Keyboard().requestContact("📱 Share My Number").resized().oneTime();
-      await ctx.reply(
-        "👋 Welcome to *Shamo Bingo*!\n\nPlease share your phone number to register and start playing.",
-        {
-          parse_mode: 'Markdown',
-          reply_markup: shareMarkup
-        }
-      );
     }
   });
 
-  // Handle Shared Contact
+  // Handle Shared Contact Verification
   bot.on('message:contact', async (ctx) => {
     const contact = ctx.message.contact;
     const userId = ctx.from?.id;
     if (!userId || !contact) return;
 
-    // Check if the contact belongs to the user who clicked it
+    // Check if the contact belongs to the user who shared it
     if (contact.user_id !== userId) {
-      await ctx.reply("❌ Please share your own contact number.");
+      await ctx.reply("❌ Authentication failed. Please share your own contact number.");
       return;
     }
 
     const phone = contact.phone_number;
     const username = ctx.from.username || ctx.from.first_name || 'Player';
 
-    await registerUser(userId, username, phone);
+    const updatedUser = await registerUser(userId, username, phone);
+    const currentBalance = await getBalance(userId);
 
-    await ctx.reply("✅ Registration Successful! Welcome to Shamo Bingo.", {
-      reply_markup: mainMenu()
-    });
+    await ctx.reply(
+      `🎉 *Phone Verification Successful!*\n\n` +
+      `🎁 Your **30.00 ETB Welcome Bonus** is credited to your wallet!\n` +
+      `💰 *Current Wallet Balance:* **${currentBalance.toFixed(2)} ETB**\n\n` +
+      `You can now tap *🎮 Play Bingo* to join games immediately.`,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: mainMenu()
+      }
+    );
   });
 
   // Balance
@@ -63,7 +85,7 @@ export function registerUserHandlers(bot: Bot) {
   bot.hears('💰 Deposit', async (ctx) => {
     await ctx.reply(
       "💳 *Deposit Options*\n\n" +
-      "To deposit funds into your Shamo Bingo account, please contact the administrator:\n" +
+      "To deposit funds into your Bingo Spark account, please contact the administrator:\n" +
       `👤 *Admin:* @Derash_Admin or send your User ID \`${ctx.from?.id}\` for manual credit.\n\n` +
       "Once you transfer funds, the administrator will update your balance immediately.",
       { parse_mode: 'Markdown' }

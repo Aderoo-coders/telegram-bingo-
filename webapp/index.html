@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Shamo Bingo</title>
+  <title>Bingo Spark</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,11 +12,11 @@
 </head>
 <body>
   <!-- Header -->
-  <div class="header">
+  <!-- <div class="header">
     <div class="logo">
-      <span class="logo-spark">⚡</span> SHAMO BINGO <span class="logo-spark">⚡</span>
+      <span class="logo-spark">⚡</span> BINGO SPARK <span class="logo-spark">⚡</span>
     </div>
-  </div>
+  </div> -->
 
   <div class="app-container">
     
@@ -43,7 +43,7 @@
             </svg>
           </div>
           <div class="welcome-title-small">Welcome to</div>
-          <div class="welcome-title-large">GHOST BINGO</div>
+          <div class="welcome-title-large">BINGO SPARK</div>
           <div class="welcome-subtitle">Choose your stake and start playing</div>
         </div>
 
@@ -53,17 +53,11 @@
           </div>
           
           <div class="welcome-stake-buttons">
-            <button class="welcome-stake-btn" data-stake="30">
-              <span class="welcome-btn-arrow">▶</span> Play 30 ETB
+            <button class="welcome-stake-btn" data-stake="10">
+              <span class="welcome-btn-arrow">▶</span> Play 10 Birr
             </button>
-            <button class="welcome-stake-btn" data-stake="50">
-              <span class="welcome-btn-arrow">▶</span> Play 50 ETB
-            </button>
-            <button class="welcome-stake-btn" data-stake="100">
-              <span class="welcome-btn-arrow">▶</span> Play 100 ETB
-            </button>
-            <button class="welcome-stake-btn" data-stake="200">
-              <span class="welcome-btn-arrow">▶</span> Play 200 ETB
+            <button class="welcome-stake-btn" data-stake="20">
+              <span class="welcome-btn-arrow">▶</span> Play 20 Birr
             </button>
           </div>
         </div>
@@ -73,7 +67,7 @@
         </div>
 
         <div class="welcome-bot-footer">
-          @Ghostbingobot
+          @BingoSparkbot
         </div>
       </div>
 
@@ -81,18 +75,23 @@
       <div id="selection-page" class="card hidden">
         <div class="selection-header">
           <button id="selection-back-btn" class="selection-back-btn">◀ Back</button>
-          <div class="stake-badge">Stake: <span id="stake-amount">50</span> ETB</div>
+          <div class="stake-badge">Stake: <span id="stake-amount">10</span> Birr</div>
         </div>
         
         <div class="selection-status-bar">
           <div class="wallet-info">Balance: <span id="selection-wallet">0.00</span> ETB</div>
-          <div class="selected-info">Selected: <span id="selected-count" class="counter">0</span>/15</div>
+          <div class="selected-info">Selected: <span id="selected-count" class="counter">0</span>/10</div>
         </div>
         
-        <div class="instructions">Select exactly 15 numbers from the grid below:</div>
+        <div class="instructions">Select 1 to 10 cards from the 200-card grid below:</div>
         
         <div class="grid-container">
           <div class="grid" id="numbers-grid"></div>
+        </div>
+
+        <div class="mini-ticket-preview-card">
+          <!-- <div class="panel-header">Mini Bingo Ticket</div> -->
+          <div id="mini-ticket-stack" class="mini-ticket-stack"></div>
         </div>
         
         <div class="bottom-actions">
@@ -102,66 +101,85 @@
         </div>
       </div>
 
-      <!-- Playing Page (Hidden by default) -->
-      <div id="playing-page" class="card hidden">
-        <!-- Waiting/Lobby State overlay -->
+      <!-- Game Board Room (Hidden by default) -->
+      <div id="playing-page" class="game-board-room hidden">
+
+        <!-- Lobby Waiting & Countdown Overlay -->
         <div id="lobby-waiting" class="lobby-overlay">
           <div class="loader-spinner"></div>
-          <h2>Waiting for Opponents</h2>
-          <p class="waiting-details">Need at least 2 players to start.</p>
+          <h2 id="lobby-waiting-status">Waiting for players to join...</h2>
+          <div class="waiting-details">Minimum 2 players required to begin</div>
+          <ul id="joined-players-list" class="joined-players-list"></ul>
           <div id="lobby-countdown-box" class="countdown-box hidden">
-            Starting in: <span id="lobby-seconds">30</span>s
-          </div>
-          <div class="joined-players-box">
-            <h3>Players Joined:</h3>
-            <ul id="joined-players-list">
-              <!-- Dynamically populated -->
-            </ul>
+            ⏳ Game starts in: <span id="lobby-seconds" class="countdown-seconds">30</span>s
           </div>
         </div>
 
-        <!-- Game active layout -->
-        <div class="top-stats">
-          <div class="stat-box">
-            <span class="stat-label">GAME ID</span>
-            <span class="stat-value" id="cartela-count">#--</span>
+        <!-- Top stats bar -->
+        <div class="board-stats-bar">
+          <button type="button" id="board-back-btn" class="board-back-btn" aria-label="Back">‹</button>
+          <div class="board-stat">
+            <span class="board-stat-label">DERASH</span>
+            <span class="board-stat-value" id="board-derash">0 ETB</span>
           </div>
-          <div class="stat-box">
-            <span class="stat-label">CALLED</span>
-            <span class="stat-value" id="called-count">0</span>
+          <div class="board-stat">
+            <span class="board-stat-label">PLAYERS</span>
+            <span class="board-stat-value" id="board-players">0</span>
           </div>
-          <div class="stat-box">
-            <span class="stat-label">WALLET</span>
-            <span class="stat-value" id="playing-wallet">0.00 ETB</span>
+          <div class="board-stat">
+            <span class="board-stat-label">STAKE</span>
+            <span class="board-stat-value" id="board-stake">0 ETB</span>
+          </div>
+          <div class="board-stat">
+            <span class="board-stat-label">CALLED</span>
+            <span class="board-stat-value" id="called-count">0</span>
+          </div>
+          <div class="board-stat">
+            <span class="board-stat-label">GAME NO</span>
+            <span class="board-stat-value" id="cartela-count">--</span>
           </div>
         </div>
 
-        <!-- Recent Called Ball Showcase -->
-        <div class="ball-callout-container">
-          <div id="current-ball" class="called-ball-large">-</div>
-          <div class="ball-history" id="ball-history-row">
-            <!-- Small balls showing last 5 called numbers -->
+        <!-- Main board + live call panel -->
+        <div class="board-room-body">
+          <div class="called-board-panel">
+            <div class="bingo-header-circles">
+              <div class="bingo-circle b">B</div>
+              <div class="bingo-circle i">I</div>
+              <div class="bingo-circle n">N</div>
+              <div class="bingo-circle g">G</div>
+              <div class="bingo-circle o">O</div>
+            </div>
+            <div id="main-grid" class="called-board-grid" aria-label="Called Board 1-75"></div>
           </div>
-        </div>
 
-        <div class="bingo-header">
-          <div class="bingo-letter b">B</div>
-          <div class="bingo-letter i">I</div>
-          <div class="bingo-letter n">N</div>
-          <div class="bingo-letter g">G</div>
-          <div class="bingo-letter o">O</div>
-        </div>
+          <aside class="live-call-panel">
+            <div class="live-call-top">
+              <div class="live-indicator">
+                <span class="live-dot"></span>
+                <span>LIVE <span id="live-progress">0/75</span></span>
+              </div>
+              <label class="auto-toggle" title="Auto mark">
+                <span>AUTO</span>
+                <input type="checkbox" id="auto-mark-toggle" checked>
+                <span class="auto-slider"></span>
+              </label>
+            </div>
 
-        <div class="game-main-content">
-          <div class="board-panel">
-            <div class="panel-header">Called Board (1-130)</div>
-            <div id="main-grid" class="main-bingo-grid"></div>
-          </div>
-          
-          <div class="player-panel">
-            <div class="panel-header">Your Card (Matches: <span id="match-score">0</span>/12)</div>
-            <div id="player-cartela" class="player-cartela-grid"></div>
-          </div>
+            <div id="current-ball" class="current-call-ball">-</div>
+            <div class="ball-history" id="ball-history-row"></div>
+
+            <div class="board-status-box">
+              <div class="board-status-icon">⏱</div>
+              <p id="board-status-text">Waiting for the next number...</p>
+              <p class="board-match-line">Matches: <span id="match-score">0</span>/<span id="match-target">0</span></p>
+            </div>
+
+            <div id="player-cartela" class="player-cartela-grid board-room-cartela"></div>
+
+            <button type="button" id="bingo-action-btn" class="bingo-action-btn" disabled>NO CARD</button>
+            <span id="playing-wallet" class="visually-hidden">0.00 ETB</span>
+          </aside>
         </div>
 
         <!-- Winner Announcement Overlay -->
@@ -171,7 +189,8 @@
             <div class="trophy">🏆</div>
             <p id="winner-name-p">Winner: user123</p>
             <p id="payout-amount-p">Won: 0.00 ETB</p>
-            <button id="lobby-return-btn" class="btn btn-primary">Return to Menu</button>
+            <p id="auto-return-hint" class="auto-return-hint">Returning to menu in 3s…</p>
+            <button id="lobby-return-btn" class="btn btn-primary hidden">Return to Menu</button>
           </div>
         </div>
       </div>
@@ -179,30 +198,141 @@
 
     <!-- WALLET TAB -->
     <div id="tab-wallet" class="tab-content hidden">
-      <div class="card">
+      <!-- 1. MAIN WALLET DASHBOARD VIEW -->
+      <div id="wallet-main-view" class="card">
         <h2 class="section-title">💼 Wallet Dashboard</h2>
         
-        <div class="wallet-balance-card">
-          <span class="balance-title">AVAILABLE BALANCE</span>
-          <span class="balance-value" id="wallet-tab-balance">0.00 ETB</span>
-        </div>
-
-        <div class="withdrawal-section">
-          <h3>Request Withdrawal</h3>
-          <p class="desc">Deduct directly from your wallet balance. Minimum 50 ETB.</p>
-          <div class="withdrawal-form">
-            <input type="number" id="withdraw-amount-input" placeholder="Amount (ETB)" min="50" step="10">
-            <button id="submit-withdrawal-btn" class="btn btn-primary">Request Payout</button>
+        <div class="wallet-balance-card-new">
+          <div class="balance-card-left">
+            <div class="balance-line">
+              <span class="card-label">Balance</span>
+              <span class="card-value-large"><span id="wallet-tab-balance-new">0</span> Birr</span>
+            </div>
+            <div class="balance-divider"></div>
+            <div class="balance-line">
+              <span class="card-label">Bonus</span>
+              <span class="card-value-small"><span id="wallet-tab-bonus-new">0</span> Birr</span>
+            </div>
           </div>
-          <div id="withdraw-message" class="message-box hidden"></div>
+          <div class="balance-card-right">
+            <div class="etb-coin">
+              <span>ETB</span>
+            </div>
+          </div>
         </div>
 
+        <!-- Deposit & Withdraw side-by-side action buttons -->
+        <div class="wallet-action-row">
+          <button id="wallet-goto-deposit-btn" class="btn btn-deposit">Deposit</button>
+          <button id="wallet-goto-withdraw-btn" class="btn btn-withdraw">Withdraw</button>
+        </div>
+
+        <!-- Transactions Section -->
         <div class="transactions-section">
-          <h3>Recent Transactions</h3>
+          <h3>Transactions</h3>
           <div id="wallet-transactions-list" class="transactions-list">
             <!-- Dynamically populated -->
           </div>
         </div>
+      </div>
+
+      <!-- 2. DEPOSIT / PAYMENT METHOD VIEW (HIDDEN BY DEFAULT) -->
+      <div id="wallet-deposit-view" class="card hidden">
+        <div class="sub-view-header">
+          <button id="deposit-back-btn" class="btn-sub-back">←</button>
+          <span class="sub-view-title">Deposit funds</span>
+        </div>
+
+        <div class="deposit-balance-card">
+          <div class="deposit-balance-label">Current balance</div>
+          <div id="deposit-current-balance" class="deposit-balance-value">0 ETB</div>
+        </div>
+
+        <div class="deposit-form modern-deposit-form">
+          <div class="deposit-amount-control">
+            <label for="deposit-amount-input">Amount (ETB)</label>
+            <input type="number" id="deposit-amount-input" placeholder="Enter amount" min="50" step="10">
+          </div>
+
+          <div class="preset-buttons deposit-quick-amounts">
+            <button type="button" class="preset-btn" data-amount="50">50</button>
+            <button type="button" class="preset-btn" data-amount="100">100</button>
+            <button type="button" class="preset-btn" data-amount="200">200</button>
+            <button type="button" class="preset-btn" data-amount="500">500</button>
+          </div>
+
+          <div class="deposit-pay-via-title">Pay via</div>
+          <div class="deposit-platform-grid">
+            <button type="button" class="payment-item deposit-pay-option" data-platform="telebirr">Telebirr</button>
+            <button type="button" class="payment-item deposit-pay-option" data-platform="cbe">CBE Birr</button>
+            <button type="button" class="payment-item deposit-pay-option" data-platform="amole">Amole</button>
+            <button type="button" class="payment-item deposit-pay-option" data-platform="bank">Bank Transfer</button>
+          </div>
+
+          <div class="deposit-ref-inline hidden">
+            <label for="deposit-ref-input" id="deposit-ref-label">Transaction Ref (optional)</label>
+            <input type="text" id="deposit-ref-input" placeholder="Enter transaction reference">
+          </div>
+
+          <button id="submit-deposit-btn" class="btn btn-primary btn-block deposit-submit-btn">Deposit</button>
+        </div>
+
+        <div id="deposit-details-card" class="deposit-details-card hidden">
+          <div class="deposit-detail-row">
+            <div>
+              <div class="deposit-detail-label">Send to</div>
+              <div class="deposit-detail-value" id="deposit-target-val">0912345678</div>
+            </div>
+            <button id="copy-deposit-target-btn" class="btn-copy">📋 Copy</button>
+          </div>
+          <div class="deposit-detail-row">
+            <div>
+              <div class="deposit-detail-label">Name</div>
+              <div class="deposit-detail-value" id="deposit-target-name">Bingo Spark Admin</div>
+            </div>
+          </div>
+          <div class="deposit-detail-row">
+            <div>
+              <div class="deposit-detail-label">Network / Type</div>
+              <div class="deposit-detail-value" id="deposit-target-type">Telebirr Mobile Money</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="deposit-message" class="message-box hidden"></div>
+      </div>
+
+      <!-- 3. WITHDRAWAL VIEW (HIDDEN BY DEFAULT) -->
+      <div id="wallet-withdraw-view" class="card hidden">
+        <div class="sub-view-header">
+          <button id="withdraw-back-btn" class="btn-sub-back">←</button>
+          <span class="sub-view-title">Withdraw funds</span>
+        </div>
+
+        <div class="deposit-balance-card">
+          <div class="deposit-balance-label">Current balance</div>
+          <div id="withdraw-current-balance" class="deposit-balance-value">0 ETB</div>
+        </div>
+
+        <div class="deposit-form modern-deposit-form modern-withdraw-form">
+          <div class="deposit-amount-control">
+            <label for="withdraw-amount-input">Amount (ETB)</label>
+            <input type="number" id="withdraw-amount-input" placeholder="Enter amount" min="50" step="10">
+          </div>
+
+          <div class="preset-buttons deposit-quick-amounts withdraw-quick-amounts">
+            <button type="button" class="preset-btn withdraw-preset-btn" data-amount="50">50</button>
+            <button type="button" class="preset-btn withdraw-preset-btn" data-amount="100">100</button>
+            <button type="button" class="preset-btn withdraw-preset-btn" data-amount="200">200</button>
+            <button type="button" class="preset-btn withdraw-preset-btn" data-amount="500">500</button>
+          </div>
+
+          <p class="withdraw-info-text">Withdrawals are processed within 24 hours by an admin.</p>
+
+          <button id="submit-withdrawal-btn" class="btn btn-primary btn-block deposit-submit-btn">Request withdrawal</button>
+        </div>
+
+        <div id="withdraw-message" class="message-box hidden"></div>
       </div>
     </div>
 
@@ -258,8 +388,8 @@
           <h3>🤝 Support & Contact</h3>
           <p class="desc">Need help or want to deposit manual funds?</p>
           <div class="settings-actions">
-            <a href="https://t.me/Derash_Admin" target="_blank" class="btn btn-secondary">💬 Contact Admin</a>
-            <a href="https://t.me/Derash_Admin" target="_blank" class="btn btn-warning">💳 Deposit Wallet</a>
+            <a href="https://t.me/Alexbdujebar" target="_blank" class="btn btn-secondary">💬 Contact Admin</a>
+            <a href="https://t.me/Alexbdujebar" target="_blank" class="btn btn-warning">💳 Deposit Wallet</a>
           </div>
           <div class="faq-box">
             <h4>💡 FAQ</h4>
@@ -293,6 +423,7 @@
       <span class="nav-label">Profile</span>
     </button>
   </div>
+
 
   <script src="app.js"></script>
 </body>
