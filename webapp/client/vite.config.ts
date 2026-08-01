@@ -8,8 +8,8 @@ export default defineConfig({
   plugins: [react()],
   base: '/webapp/',
   build: {
-    outDir: '../',
-    emptyOutDir: false,
+    outDir: 'dist',
+    emptyOutDir: true,
   },
   server: {
     proxy: {
