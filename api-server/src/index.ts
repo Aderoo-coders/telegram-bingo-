@@ -1,6 +1,7 @@
 import express from 'express';
 import http from 'http';
 import { WebSocketServer } from 'ws';
+import { webhookCallback } from 'grammy';
 import { fileURLToPath } from 'url';
 import path from 'path';
 import { config } from './config.js';
@@ -60,6 +61,11 @@ async function startServer() {
     }
     console.log(`📂 Serving static webapp from: ${webappPath}`);
     app.use('/webapp', express.static(webappPath));
+
+    // Telegram Webhook endpoint (replaces long polling)
+    app.post('/telegram/webhook', webhookCallback(bot, 'express', {
+      secretToken: config.WEBHOOK_SECRET,
+    }));
 
     // SECURE WALLET BALANCE API
     app.get('/api/user-balance', async (req, res) => {
@@ -300,18 +306,17 @@ async function startServer() {
       console.log(`🚀 API Server + WebSockets running on port ${config.PORT}`);
     });
 
-    // 5. Start Telegram Bot (with auto-retry on network errors)
-    const startBot = () => {
-      bot.start({
-        onStart: (botInfo) => {
-          console.log(`🤖 Telegram Bot started successfully as @${botInfo.username}`);
-        }
-      }).catch(err => {
-        console.error('❌ Telegram Bot polling stopped, restarting in 5s:', err);
-        setTimeout(startBot, 5000);
+    // 5. Register Telegram Bot Webhook (replaces long polling)
+    const webhookUrl = `${config.WEBAPP_URL}/telegram/webhook`;
+    try {
+      await bot.api.setWebhook(webhookUrl, {
+        secret_token: config.WEBHOOK_SECRET,
+        drop_pending_updates: true,
       });
-    };
-    startBot();
+      console.log(`🤖 Telegram Bot webhook registered at ${webhookUrl}`);
+    } catch (err) {
+      console.error('❌ Failed to register Telegram webhook:', err);
+    }
 
   } catch (err) {
     // Log the error but do NOT exit — let Railway health-check fail naturally

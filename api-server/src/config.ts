@@ -22,6 +22,7 @@ export interface Config {
   SESSION_SECRET: string;
   WEBAPP_URL: string;
   PORT: number;
+  WEBHOOK_SECRET: string;
 }
 
 export const config: Config = {
@@ -37,6 +38,7 @@ export const config: Config = {
   SESSION_SECRET: process.env.SESSION_SECRET || 'default-session-secret-change-me',
   WEBAPP_URL: process.env.WEBAPP_URL || 'http://localhost:8080',
   PORT: parseInt(process.env.PORT || '8080', 10),
+  WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || process.env.SESSION_SECRET || 'default-session-secret-change-me',
 };
 
 if (!config.BOT_TOKEN) {
