@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from telegram import Update
@@ -89,6 +90,19 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+# The frontend is now deployed separately (Cloudflare Pages, a different
+# origin from this API), so cross-origin fetch()/WebSocket calls need CORS.
+# The Node original never needed this since it served the frontend itself
+# same-origin. Local dev (Vite proxy) doesn't hit CORS at all, but is
+# allowed too in case the dev server is ever pointed at this API directly.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origin_regex=r"https://([a-z0-9-]+\.)?telegram-bingo\.pages\.dev|http://localhost:\d+",
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.exception_handler(Exception)

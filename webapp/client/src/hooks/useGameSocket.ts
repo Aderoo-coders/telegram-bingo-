@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { getBingoLetter } from '../lib/tickets';
+import { wsUrl } from '../lib/apiBase';
 import type { LobbyPlayer, ServerMessage } from '../types';
 import type { TelegramWebApp } from '../telegram';
 
@@ -251,8 +252,7 @@ export function useGameSocket(tg: TelegramWebApp, onExitGame: () => void) {
       const myUserId = tg.initDataUnsafe?.user?.id?.toString() || 'me';
       dispatch({ type: 'JOIN_START', stake, myNumbers: numbers, myUserId });
 
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const socket = new WebSocket(`${protocol}//${window.location.host}/ws`);
+      const socket = new WebSocket(wsUrl('/ws'));
       socketRef.current = socket;
 
       socket.onopen = () => {

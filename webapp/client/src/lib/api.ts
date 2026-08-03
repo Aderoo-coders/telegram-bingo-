@@ -1,4 +1,5 @@
 import type { GameHistoryEntry, Transaction, UserProfile } from '../types';
+import { apiUrl } from './apiBase';
 
 interface BalanceResponse {
   balance: number | string;
@@ -27,31 +28,31 @@ interface DepositResponse {
 }
 
 export async function fetchUserBalance(initData: string): Promise<BalanceResponse | null> {
-  const response = await fetch(`/api/user-balance?initData=${encodeURIComponent(initData)}`);
+  const response = await fetch(apiUrl(`/api/user-balance?initData=${encodeURIComponent(initData)}`));
   if (!response.ok) return null;
   return response.json();
 }
 
 export async function fetchUserProfile(initData: string): Promise<UserProfile | null> {
-  const response = await fetch(`/api/user-profile?initData=${encodeURIComponent(initData)}`);
+  const response = await fetch(apiUrl(`/api/user-profile?initData=${encodeURIComponent(initData)}`));
   if (!response.ok) return null;
   return response.json();
 }
 
 export async function fetchUserTransactions(initData: string): Promise<TransactionsResponse | null> {
-  const response = await fetch(`/api/user-transactions?initData=${encodeURIComponent(initData)}`);
+  const response = await fetch(apiUrl(`/api/user-transactions?initData=${encodeURIComponent(initData)}`));
   if (!response.ok) return null;
   return response.json();
 }
 
 export async function fetchGameHistory(initData: string): Promise<HistoryResponse | null> {
-  const response = await fetch(`/api/user-history?initData=${encodeURIComponent(initData)}`);
+  const response = await fetch(apiUrl(`/api/user-history?initData=${encodeURIComponent(initData)}`));
   if (!response.ok) return null;
   return response.json();
 }
 
 export async function requestWithdrawal(initData: string, amount: number): Promise<{ ok: boolean; data: WithdrawalResponse }> {
-  const response = await fetch('/api/request-withdrawal', {
+  const response = await fetch(apiUrl('/api/request-withdrawal'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ initData, amount }),
@@ -66,7 +67,7 @@ export async function requestDeposit(
   platform: string,
   referenceId: string,
 ): Promise<{ ok: boolean; data: DepositResponse }> {
-  const response = await fetch('/api/request-deposit', {
+  const response = await fetch(apiUrl('/api/request-deposit'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ initData, amount, platform, referenceId }),
