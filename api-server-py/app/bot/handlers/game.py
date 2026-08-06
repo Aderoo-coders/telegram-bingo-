@@ -3,7 +3,8 @@ import re
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, WebAppInfo
 from telegram.ext import Application, CallbackQueryHandler, ContextTypes, MessageHandler, filters
 
-from ... import config, database
+from config import config
+from database import database
 
 
 async def hears_play_bingo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -11,7 +12,7 @@ async def hears_play_bingo(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     if not user_id:
         return
 
-    web_app_url = f"{config.WEBAPP_URL}/webapp/index.html"
+    web_app_url = config.WEBAPP_URL
     keyboard = InlineKeyboardMarkup(
         [[InlineKeyboardButton("🎮 Play Bingo spark", web_app=WebAppInfo(url=web_app_url))]]
     )
@@ -46,7 +47,7 @@ async def stake_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 
     await query.answer()
 
-    web_app_url = f"{config.WEBAPP_URL}/webapp/index.html?stake={stake}"
+    web_app_url = f"{config.WEBAPP_URL}?stake={stake}"
     keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("🎮 Open Bingo spark", web_app=WebAppInfo(url=web_app_url))]])
 
     await query.message.reply_text(

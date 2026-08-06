@@ -3,8 +3,9 @@ import logging
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
-from ... import config, database
-from ..keyboards import contact_request_keyboard, main_menu
+from app.config import config
+from app.database import database
+from .keyboards import contact_request_keyboard, main_menu
 
 logger = logging.getLogger("bingo")
 
