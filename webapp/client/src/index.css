@@ -3,7 +3,7 @@
   --bg-card: #1A2E42;
   --bg-card-frost: rgba(255, 255, 255, 0.05);
   --border-glass: rgba(255, 255, 255, 0.10);
-  
+
   --color-primary: #F5C518;       /* Gold */
   --color-secondary: #C49B0D;     /* Dark Gold */
   --color-gold-dark: #C49B0D;     /* Dark Gold */
@@ -12,11 +12,11 @@
   --color-teal: #1D9E75;          /* Teal */
   --color-coral: #D85A30;         /* Coral */
   --color-purple: #7F77DD;        /* Purple */
-  
+
   --color-text: #FFFFFF;          /* White */
   --color-text-dim: #8A9BB0;      /* Muted */
   --color-overlay: rgba(13, 27, 42, 0.92); /* Overlay */
-  
+
   --font-main: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
@@ -922,6 +922,18 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
+.game-over-box h1.winner-title {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-gold-dark));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.game-over-box h1.loss-title {
+  background: linear-gradient(135deg, #ff3c70, #ff8000);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
 .trophy {
   font-size: 50px;
   margin-bottom: 16px;
@@ -1426,7 +1438,7 @@ body.obsidian-theme {
   --color-secondary: #00ccff;
   --color-danger: #ff453a;
   --color-warning: #ffb300;
-  background-image: 
+  background-image:
     radial-gradient(circle at 10% 20%, rgba(0, 119, 255, 0.05) 0%, transparent 40%),
     radial-gradient(circle at 90% 80%, rgba(0, 204, 255, 0.05) 0%, transparent 40%);
 }
@@ -1471,7 +1483,7 @@ body.light-theme {
   --color-warning: #d99100;
   --color-text: #1a1e29;
   --color-text-dim: #606877;
-  background-image: 
+  background-image:
     radial-gradient(circle at 10% 20%, rgba(0, 153, 204, 0.08) 0%, transparent 40%),
     radial-gradient(circle at 90% 80%, rgba(0, 179, 116, 0.08) 0%, transparent 40%);
 }
@@ -2755,4 +2767,3 @@ body.light-theme .tx-title-new {
 body.light-theme .tx-amount-new {
   color: #1a1e29;
 }
-
