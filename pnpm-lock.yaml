@@ -8,7 +8,7 @@ importers:
 
   .: {}
 
-  artifacts/api-server:
+  api-server:
     dependencies:
       dotenv:
         specifier: ^16.4.5
