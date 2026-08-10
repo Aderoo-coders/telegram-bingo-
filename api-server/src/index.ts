@@ -53,6 +53,20 @@ async function startServer() {
     // Enable JSON parsing middleware
     app.use(express.json());
 
+    // Allow the webapp (deployed on a separate origin, e.g. Cloudflare Pages)
+    // to call this API. Auth is via signed Telegram initData, not cookies,
+    // so a wildcard origin doesn't expose credentials.
+    app.use((req, res, next) => {
+      res.header('Access-Control-Allow-Origin', '*');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type');
+      if (req.method === 'OPTIONS') {
+        res.sendStatus(204);
+        return;
+      }
+      next();
+    });
+
     // Serve webapp static folder dynamically
     let webappPath = path.resolve(__dirname, '../../../webapp');
     if (!fs.existsSync(webappPath)) {

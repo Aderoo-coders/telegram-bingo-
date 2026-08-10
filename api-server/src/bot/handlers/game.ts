@@ -7,7 +7,7 @@ export function registerGameHandlers(bot: Bot) {
     const userId = ctx.from?.id;
     if (!userId) return;
 
-    const webAppUrl = `${config.WEBAPP_URL}/webapp/index.html`;
+    const webAppUrl = config.WEBAPP_URL;
     const keyboard = new InlineKeyboard()
       .webApp("🎮 Play Bingo spark", webAppUrl);
 
@@ -40,7 +40,7 @@ export function registerGameHandlers(bot: Bot) {
     }
 
     const balance = await getBalance(userId);
-    if (balance < stake) {
+    if (balance < stake && !isAdmin) {
       await ctx.answerCallbackQuery({
         text: "❌ Not enough balance!",
         show_alert: true
@@ -50,7 +50,7 @@ export function registerGameHandlers(bot: Bot) {
 
     await ctx.answerCallbackQuery();
 
-    const webAppUrl = `${config.WEBAPP_URL}/webapp/index.html?stake=${stake}`;
+    const webAppUrl = `${config.WEBAPP_URL}?stake=${stake}`;
     const keyboard = new InlineKeyboard().webApp("🎮 Open Bingo spark", webAppUrl);
 
     await ctx.reply(

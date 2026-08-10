@@ -35,7 +35,7 @@ export const config: Config = {
     return parsedAdminIds.includes(num);
   },
   SESSION_SECRET: process.env.SESSION_SECRET || 'default-session-secret-change-me',
-  WEBAPP_URL: process.env.WEBAPP_URL || 'http://localhost:8080',
+  WEBAPP_URL: process.env.WEBAPP_URL || '',
   PORT: parseInt(process.env.PORT || '8080', 10),
 };
 
@@ -44,4 +44,7 @@ if (!config.BOT_TOKEN) {
 }
 if (!config.DATABASE_URL) {
   console.error('❌ DATABASE_URL is missing in environment variables.');
+}
+if (!config.WEBAPP_URL) {
+  console.error('❌ WEBAPP_URL is missing in environment variables.');
 }
